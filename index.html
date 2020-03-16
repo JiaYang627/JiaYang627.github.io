@@ -342,6 +342,13 @@
 <h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+<p>打开cmd，切换到keystore所在的文件夹下</p>
+<p>输入 keytool -list -v -keystore xxx       回车，如果keystore有密码，接着输入密码，其中xxx为你的keystore名字，keytool命令是jdk自带的， 如果不能运行，请先配置jdk；</p>
+<p>找到SHA1 ，复制。</p>
+<blockquote>
+<p>此处以 HKS 为例说明，图片中SHA1值已经打码</p>
+</blockquote>
+<p><img src="http://m.qpic.cn/psb?/V14YlNrL2eQEkW/YM*NR2.BgRowAJxCnTCauVr3JfbLoklFLqFvm2MHHkc!/b/dLYAAAAAAAAA&bo=0QM4A9EDOAMDByI!&rf=viewer_4" alt="查看SHA1命令"></p>
 
           
         
