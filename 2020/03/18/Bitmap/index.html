@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Bitmap,Android," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Bitmap的加载和CacheBitmap的高效加载Bitmap 在Android中指的是一张照片，可以是Png格式也可以是Jpg等其他常见的图片格式。那么如何加载一个图片呢？BitmapFactory类提供了四种方法：  decodeFile 从文件系统 decodeResource 从资源 decodeStream 从输入流 decodeByteArray 从字节数组  其中decodeFil">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bitmap">
+<meta property="og:url" content="http://yoursite.com/2020/03/18/Bitmap/index.html">
+<meta property="og:site_name" content="JY&#39;s Blog">
+<meta property="og:description" content="Bitmap的加载和CacheBitmap的高效加载Bitmap 在Android中指的是一张照片，可以是Png格式也可以是Jpg等其他常见的图片格式。那么如何加载一个图片呢？BitmapFactory类提供了四种方法：  decodeFile 从文件系统 decodeResource 从资源 decodeStream 从输入流 decodeByteArray 从字节数组  其中decodeFil">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/NPuxvG1sl*f5KAB*tasYERTgI8D9BzikSq*RqvDI83g!/b/dLEAAAAAAAAA&bo=hQLzAYUC8wEDByI!&rf=viewer_4">
+<meta property="og:image" content="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/CwrQ0EoSp7nGtM.CtxPU9yGSsrzd*jUlnYWPXSYDuX8!/b/dAEBAAAAAAAA&bo=BwKjAwcCowMDACU!&rf=viewer_4">
+<meta property="article:published_time" content="2020-03-18T03:46:22.000Z">
+<meta property="article:modified_time" content="2020-03-18T03:47:40.481Z">
+<meta property="article:author" content="JiaYang">
+<meta property="article:tag" content="Bitmap">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/NPuxvG1sl*f5KAB*tasYERTgI8D9BzikSq*RqvDI83g!/b/dLEAAAAAAAAA&bo=hQLzAYUC8wEDByI!&rf=viewer_4">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/18/Bitmap/"/>
+
+
+
+
+
+  <title>Bitmap | JY's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">JY's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/18/Bitmap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JiaYang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/jy_blog_logo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JY's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Bitmap</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-18T11:46:22+08:00">
+                2020-03-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Bitmap的加载和Cache"><a href="#Bitmap的加载和Cache" class="headerlink" title="Bitmap的加载和Cache"></a>Bitmap的加载和Cache</h1><h2 id="Bitmap的高效加载"><a href="#Bitmap的高效加载" class="headerlink" title="Bitmap的高效加载"></a>Bitmap的高效加载</h2><p>Bitmap 在Android中指的是一张照片，可以是Png格式也可以是Jpg等其他常见的图片格式。那么如何加载一个图片呢？<br>BitmapFactory类提供了四种方法：</p>
+<ul>
+<li>decodeFile 从文件系统</li>
+<li>decodeResource 从资源</li>
+<li>decodeStream 从输入流</li>
+<li>decodeByteArray 从字节数组</li>
+</ul>
+<p>其中decodeFile 和 decodeResource又间接调用了decodeStream方法,这四种方法最终是在Android的底层实现的。对应着BitmapFactory类中的几个native方法。</p>
+<p><strong>高效加载Bitmap的实现 其核心思想很简单：</strong></p>
+<p>通过BitmapFactory.Options 使用其 inSampleSize(采样率)来缩放大图片。通过inSampleSize缩放后可以降低内存的占用从而在一定程度上避免OOM(Out Of Memory Error),提高Bitmap加载时的性能。</p>
+<blockquote>
+<p>附上一段代码(Button按钮点击,ImageView加载资源图片 手机：小米NOTE Pro)</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">@Override</span><br><span class="line">    protected void onCreate(@Nullable Bundle savedInstanceState) &#123;</span><br><span class="line">        super.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_bitmap);</span><br><span class="line">        mImageView &#x3D; (ImageView) findViewById(R.id.imageView);</span><br><span class="line">        Point point &#x3D; new Point();</span><br><span class="line">        getWindowManager().getDefaultDisplay().getSize(point);</span><br><span class="line">        mScreenWidth &#x3D; point.x;     &#x2F;&#x2F; 屏幕宽度 1440</span><br><span class="line">        mScreenHeight &#x3D; point.y;    &#x2F;&#x2F; 屏幕高度 2560</span><br><span class="line"></span><br><span class="line">        Log.e(&quot;BitmapActivity&quot;, String.valueOf(mScreenHeight) + &quot;,&quot; + String.valueOf(mScreenWidth));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"> public void loading(View view) &#123;</span><br><span class="line">        BitmapFactory.Options options&#x3D; new BitmapFactory.Options();</span><br><span class="line">        </span><br><span class="line">        &#x2F;&#x2F; options.inJustDecodeBounds设置为true,不会真正的将图片加载到内存中去</span><br><span class="line">        options.inJustDecodeBounds &#x3D; true;</span><br><span class="line"></span><br><span class="line">        BitmapFactory.decodeResource(getResources(), R.mipmap.dog, options);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        int outHeight &#x3D; options.outHeight;  &#x2F;&#x2F; 图片的高度 3200</span><br><span class="line">        int outWidth &#x3D; options.outWidth;    &#x2F;&#x2F; 图片的宽度 2400</span><br><span class="line"></span><br><span class="line">        int heightScale &#x3D; outHeight &#x2F; mScreenHeight; &#x2F;&#x2F; 高度比例 </span><br><span class="line">        int widthScale &#x3D; outWidth &#x2F; mScreenWidth;   &#x2F;&#x2F; 宽度比例</span><br><span class="line">        int scale &#x3D; widthScale &gt; heightScale ? widthScale : heightScale;</span><br><span class="line"></span><br><span class="line">        &#x2F;&#x2F; 将算好的采样率设置</span><br><span class="line">        options.inSampleSize &#x3D; scale;</span><br><span class="line">        options.inJustDecodeBounds &#x3D; false;</span><br><span class="line"></span><br><span class="line">        Bitmap bitmap &#x3D; BitmapFactory.decodeResource(getResources(), R.mipmap.dog, options);</span><br><span class="line">        mImageView.setImageBitmap(bitmap);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/NPuxvG1sl*f5KAB*tasYERTgI8D9BzikSq*RqvDI83g!/b/dLEAAAAAAAAA&bo=hQLzAYUC8wEDByI!&rf=viewer_4" alt="Bitmap-dog"></p>
+<p><img src="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/CwrQ0EoSp7nGtM.CtxPU9yGSsrzd*jUlnYWPXSYDuX8!/b/dAEBAAAAAAAA&bo=BwKjAwcCowMDACU!&rf=viewer_4" alt="Bitmap-ui"></p>
+<h2 id="Android的缓存策略"><a href="#Android的缓存策略" class="headerlink" title="Android的缓存策略"></a>Android的缓存策略</h2><blockquote>
+<p>缓存策略在Android中有着广泛的使用场景。但为了避免下载图片消耗过多的流量，缓存策略此时就变的很重要。当程序第一次从网络加载图片后，将其缓存到存储设备上，下次使用的时候就不必再从网络拉取，为了提高用户体验，往往还会降图片再在内存中缓存一份，这样当应用打算从网络请求一张图片的时候，会先从内存中获取，内存没有就从存储设备获取，存储设备没有就在从网络上拉取。</p>
+</blockquote>
+<p>LRU算法(<em>Least Recently Used</em>):近期最少使用算法。其核心思想是当缓存满时，会优先淘汰那些近期最少使用的缓存对象。<br>LRU算法缓存有两种：<em>LruCache</em>(内存缓存) 和 <em>DishLruCache</em>(存储设备缓存),通过二者的完美结合，就能实现一个具有很高使用价值的ImageLoader。</p>
+<h3 id="内存缓存LruCache"><a href="#内存缓存LruCache" class="headerlink" title="内存缓存LruCache"></a>内存缓存LruCache</h3><p><em>LruCache</em> 是一个线程安全的广泛类,其内部采用一个<em>LinkedHashMap</em>以强引用的方式存储外界的缓存对象，提供了get和put方法来完成缓存的获取和添加操作，当缓存满时，LruCache会移除较早使用的缓存对象，然后再添加新的缓存对象。</p>
+<ul>
+<li>强引用：直接的对象引用;</li>
+<li>软引用：当一个对象只有软引用存在时，系统内存不足时此对象会被gc回收;</li>
+<li>弱引用：当一个对象只有弱引用存在时，此对象会随时被gc回收;</li>
+</ul>
+<p><em>LruCache</em>的定义:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public class LruCache&lt;K,V&gt;&#123;</span><br><span class="line">    private final LinkedHashMap&lt;K,V&gt; map;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><em>LruCache</em>的实现也很简单，附上LruCache的典型初始化过程:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">int maxMemory &#x3D; (int) Runtime.getRuntime().maxMemory();</span><br><span class="line">int cacheSise &#x3D;maxMemory &#x2F; 8;</span><br><span class="line">mLruCache &#x3D; new LruCache&lt;String, Bitmap&gt;(cacheSize) &#123;</span><br><span class="line">    &#x2F;&#x2F;计算缓存对象的大小</span><br><span class="line">    @Override</span><br><span class="line">    protected int sizeOf(String key, Bitmap bitmap) &#123;</span><br><span class="line">        &#x2F;&#x2F; 单位是MB</span><br><span class="line">        return bitmap.getRowBytes() * bitmap.getHeight() &#x2F; bitmap.getByteCount();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F;移除旧缓存时调用</span><br><span class="line">    @Override</span><br><span class="line">    protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) &#123;</span><br><span class="line">        super.entryRemoved(evicted, key, oldValue, newValue);</span><br><span class="line">        &#x2F;&#x2F;  资源回收的工作</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>LruCache的添加和获得一个缓存对象也很简单:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mMemoryCache.get(key);  &#x2F;&#x2F; 获得缓存</span><br><span class="line">mMemoryCache.put(key , bitmap);     &#x2F;&#x2F; 添加</span><br><span class="line">mMemoryCache.remove(key);   &#x2F;&#x2F; 删除</span><br></pre></td></tr></table></figure>
+
+<h3 id="存储设备缓存DiskLruCache"><a href="#存储设备缓存DiskLruCache" class="headerlink" title="存储设备缓存DiskLruCache"></a>存储设备缓存DiskLruCache</h3><p><em>DiskLruCache</em> 磁盘缓存：通过将缓存对象写入文件系统从而实现缓存的效果。<br>DiskLruCache得到了Android官方文档的推荐，但不属于AndroidSDK的一部分，源码可从如下网址得到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;android.googlesource.com&#x2F;platform&#x2F;libcore&#x2F;+&#x2F;android-4.1.1_r1&#x2F;luni&#x2F;src&#x2F;main&#x2F;java&#x2F;libcore&#x2F;io&#x2F;DiskLruCache.java</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>DiskLruCache的创建</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">private static final long DISK_CACHE_SIZE &#x3D; 1024 * 1024 * 50;&#x2F;&#x2F;磁盘缓存50M大小</span><br><span class="line"></span><br><span class="line">File diskCacheDir &#x3D; getExternalCacheDir();</span><br><span class="line">if (!diskCacheDir.exists())&#123;</span><br><span class="line">    diskCacheDir.mkdirs();</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;**</span><br><span class="line"> * Opens the cache in &#123;@code directory&#125;, creating a cache if none exists</span><br><span class="line"> * there.</span><br><span class="line"> *</span><br><span class="line"> * @param directory a writable directory 缓存目录</span><br><span class="line"> * @param appVersion 应用版本号</span><br><span class="line"> * @param valueCount the number of values per cache entry. Must be positive.</span><br><span class="line"> * @param maxSize the maximum number of bytes this cache should use to store</span><br><span class="line"> * @throws IOException if reading or writing the cache directory fails</span><br><span class="line"> *&#x2F;</span><br><span class="line">DiskLruCache diskLruCache &#x3D; DiskLruCache.open(diskCacheDir, 1, 1, DISK_CACHE_SIZE);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><em>DiskLruCache</em>的缓存添加</li>
+</ul>
+<p><em>DiskLruCache<em>缓存添加是通过</em>Editor<em>完成的。当使用</em>Editor<em>编辑完缓存对象后，记得使用</em>commit()</em>.</p>
+<p><strong>注意</strong>：图片的url可能含有特殊字符，所以一般采用url的md5值做为key。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">String imgUrl &#x3D; &quot;&quot;;</span><br><span class="line">String key &#x3D; MD5Util.getMd5Value(imgUrl);</span><br><span class="line">DiskLruCache.Editor editor &#x3D; diskLruCache.edit(key);</span><br><span class="line">if (editor !&#x3D; null) &#123;</span><br><span class="line">    editor.getString(0);</span><br><span class="line">&#125;</span><br><span class="line">editor.commit();&#x2F;&#x2F;提交</span><br><span class="line">editor.abort();&#x2F;&#x2F;回退</span><br><span class="line">diskLruCache.flush();&#x2F;&#x2F;刷新</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><em>DiskLruCache</em>的缓存查找</li>
+</ul>
+<p>通过<em>DiskLruCache.get</em>获取一个<em>SnapShot</em>对象，再使用<em>Snapshot</em>对象即可获得缓存的文件输入流。</p>
+<p><strong>关于FileInputStream(文件描述符)</strong>：直接使用<em>BitmapFactory.Options</em> 对<em>FileInputStream</em>进行缩放会出现问题，因为<em>FileInputStream</em>是一种有序的文件流，两次decodeStream调用会影响文件流的位置属性，导致第二次decodeStream时得到的是null。为了解决这个问题，可以通过文件流来得到它所对应的文件描述符，然后通过BitmapFactory.decodeFileDescriptor来加载一张缩放后的图片。</p>
+<p>附上一段代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">String key &#x3D; MD5Util.getMd5Value(imgUrl);</span><br><span class="line"></span><br><span class="line">Bitmap bitmap &#x3D; null;</span><br><span class="line"></span><br><span class="line">DiskLruCache.Snapshot snapshot &#x3D; diskLruCache.get(key);</span><br><span class="line">if (snapshot !&#x3D; null) &#123;</span><br><span class="line">    FileInputStream fileInputStream &#x3D; (FileInputStream) snapshot.getInputStream(DISK_CACHE_INDEX);</span><br><span class="line">    &#x2F;&#x2F;从文件流中获取文件描述符</span><br><span class="line">    FileDescriptor fileDescriptor &#x3D; fileInputStream.getFD();</span><br><span class="line">    bitmap &#x3D; decodeSampledBitmapFromFileDescriptor(fileDescriptor,reqWidth,reqHeight);</span><br><span class="line">    if (bitmap !&#x3D; null) &#123;</span><br><span class="line">        addBitmapToMemoryCache(key,bitmap);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Bitmap/" rel="tag"># Bitmap</a>
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/18/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" rel="next" title="性能优化">
+                <i class="fa fa-chevron-left"></i> 性能优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/04/16/%E6%9F%A5%E7%9C%8B%20Android%E7%9A%84Keystore%E6%96%87%E4%BB%B6%E7%9A%84SHA1%E5%80%BC/" rel="prev" title="查看 Android的Keystore文件的SHA1值">
+                查看 Android的Keystore文件的SHA1值 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/jy_blog_logo.jpg"
+                alt="JiaYang" />
+            
+              <p class="site-author-name" itemprop="name">JiaYang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JiaYang627" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:272629247@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/users/cfa79ac38c9b/timeline" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.52pojie.cn/forum.php?mod=guide&view=my" title="吾爱破解" target="_blank">吾爱破解</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Bitmap的加载和Cache"><span class="nav-number">1.</span> <span class="nav-text">Bitmap的加载和Cache</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Bitmap的高效加载"><span class="nav-number">1.1.</span> <span class="nav-text">Bitmap的高效加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android的缓存策略"><span class="nav-number">1.2.</span> <span class="nav-text">Android的缓存策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存缓存LruCache"><span class="nav-number">1.2.1.</span> <span class="nav-text">内存缓存LruCache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存储设备缓存DiskLruCache"><span class="nav-number">1.2.2.</span> <span class="nav-text">存储设备缓存DiskLruCache</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JiaYang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
