@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="优化,Android," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="性能优化  卡顿 如何衡量卡顿 “卡顿” 产生的原因 Profile GPU Rendering 通用优化流程 第一步：UI层优化 过度绘制 自定义控件绘制优化 Hierarchy Viewer(层级查看器)工具使用   第二步：代码问题查找 第三步：优化App的逻辑层     ### 卡顿   前言：关于Android性能优化,为何把”卡顿”放在前面 ？ 对于用户而言,可能注重的是App的流畅度">
+<meta property="og:type" content="article">
+<meta property="og:title" content="性能优化">
+<meta property="og:url" content="http://yoursite.com/2020/03/18/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="JY&#39;s Blog">
+<meta property="og:description" content="性能优化  卡顿 如何衡量卡顿 “卡顿” 产生的原因 Profile GPU Rendering 通用优化流程 第一步：UI层优化 过度绘制 自定义控件绘制优化 Hierarchy Viewer(层级查看器)工具使用   第二步：代码问题查找 第三步：优化App的逻辑层     ### 卡顿   前言：关于Android性能优化,为何把”卡顿”放在前面 ？ 对于用户而言,可能注重的是App的流畅度">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/9FZ5rJefVqgeX9pmDv9CfehKayZSPr3tC9XSOrERK4c!/b/dA4BAAAAAAAA&bo=5QHWAAAAAAADBxA!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/9IIVaVopt5ds2b8y8Fx3DKUI930tEdZI.NGYlz0rd5Q!/b/dPkAAAAAAAAA&bo=wgE6AQAAAAADAN0!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/76qIAgqViA1Dw9aiyY6yIlCkdaNOyo2WzU0cE9UJTjE!/b/dBEBAAAAAAAA&bo=twFuAQAAAAADAPw!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/TirqJspyU0rgnJozFiZKCsqRYZjYf1S7taz5sThbfOE!/b/dBoBAAAAAAAA&bo=mgFxAQAAAAADAM4!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/Fr*cTiv5FLJkHJJBOcIKpPQSlt*uucdX*zDvyeZWxpo!/b/dJYAAAAAAAAA&bo=nAF7AQAAAAADAMI!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/hr5n39BPJ8UvtYL0LUu97wRORkPjIeU8lF4ag0TPc7E!/b/dA4BAAAAAAAA&bo=8ACJAQAAAAADB1o!&rf=viewer_4">
+<meta property="og:image" content="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/Hqe78BFqEqlP*mTMogfLogDhFyte*dimriU073YSKME!/b/dLMAAAAAAAAA&bo=YgEuAgAAAAADAGo!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/zBY9ChCCSjetzE94*BjBE*984NB8dLh5xKTIynCumqg!/b/dEIAAAAAAAAA&bo=UAETAgAAAAADAGU!&rf=viewer_4">
+<meta property="og:image" content="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/s5kHMaPakIPbDMnKNwSP3dSuFt88jhtwQxMLXXUt8fU!/b/dBABAAAAAAAA&bo=xgCLAQAAAAADAGk!&rf=viewer_4">
+<meta property="og:image" content="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/hRLbSRzY7XXBtNqqroy4JQ.DajqN457Df1wOjuxdiy0!/b/dBABAAAAAAAA&bo=kQJ7AQAAAAADAMw!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/SBnCoSgc4kyOYuHZgN0hhqkCv*I*D8WlnEFIXFD5XVI!/b/dA4BAAAAAAAA&bo=ngNnAgAAAAADAN0!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/7FoBxIpMd8lvyTGui*cqwyFyPeWr5tdkvsRVrzGcdjI!/b/dA4BAAAAAAAA&bo=KQFKASkBSgEDByI!&rf=viewer_4">
+<meta property="og:image" content="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/izHIIGndx9TxR9.Cf*8HsE*FDgmE9dnyoV2.wYq4*Hg!/b/dDQAAAAAAAAA&bo=QgEAAkIBAAIDByI!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/ZrJn30ftd6mUCeu3gSaj.XJ31oVaVC9Bx4CwMQKOb90!/b/dLEAAAAAAAAA&bo=QgEAAkIBAAIDACU!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/LdYVhclbJSlWwTp2SeBSLDtu..5Dw6fcm6.B1sSO5a0!/b/dA4BAAAAAAAA&bo=QgEAAkIBAAIDACU!&rf=viewer_4">
+<meta property="og:image" content="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/h11.KUSgDhEvTTg0N99*2WHt7Ih0WzqqdBLi4jEy570!/b/dAEBAAAAAAAA&bo=QgEAAkIBAAIDACU!&rf=viewer_4">
+<meta property="og:image" content="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/FwQpyp*WEYcO1VMNtvDy8lBe995qQZQ.fHkfGDxuwso!/b/dPcAAAAAAAAA&bo=iwM5AosDOQIDByI!&rf=viewer_4">
+<meta property="og:image" content="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/k2GqZCdU1R3uL*sr7As2z16fC1Kfp5ck2.vMpVDfwfM!/b/dB4BAAAAAAAA&bo=jQOiAo0DogIDACU!&rf=viewer_4">
+<meta property="og:image" content="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/k2VodAvQNWB9z8*jOyC9ta5Sy7HHaXRi3HeJN6oYFz0!/b/dDQAAAAAAAAA&bo=LQOaAi0DmgIDACU!&rf=viewer_4">
+<meta property="og:image" content="http://b271.photo.store.qq.com/psb?/V14YlNrL2eQEkW/Zwx7cUKgzaf7c.HxQPNd0PmBqWpPcyxHzkgVr7o2K.Y!/b/dA8BAAAAAAAA&bo=gQLpAYEC6QEDByI!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/pXALppPqtGPBPUFn0*bn5zQNvDDuI7frWuo6DPjKBhg!/b/dPkAAAAAAAAA&bo=jwFwAY8BcAEDACU!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/jHd44oYmHQyC64DA.wsLnnu2LVeMRbAR8IsY5EgfZjU!/b/dBQBAAAAAAAA&bo=vAPWALwD1gADACU!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/j70H6Ik4a*hEL8oiT6yiuXtLq2Aor3wj9yLq8AGJ7Gw!/b/dMkAAAAAAAAA&bo=6QFJAOkBSQADACU!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/Xv4KhqpJAyvpzlcLZgsfZ7DjSW6tx1UyMffgQE118p4!/b/dMkAAAAAAAAA&bo=ZgJ4AGYCeAADACU!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/DLm0ziaah.kqtciq9spSdV2eRUQTlqL2Xp69jZfArZY!/b/dBoBAAAAAAAA&bo=ZwFiAGcBYgADACU!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/N87L5mYg1VeJ3UiBgo2loMcelpa1M0P50xGvCuzlOUw!/b/dMkAAAAAAAAA&bo=rwGgAK8BoAADACU!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/WhaV9POiwwyi.QN*VQ6G4VXhPZUmrvbv1tAgir6zLgw!/b/dLEAAAAAAAAA&bo=cwFzAHMBcwADACU!&rf=viewer_4">
+<meta property="og:image" content="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/fOQ1mtYLUlLqoH3rkNdbBaIUr.EelzJnWN6Hjkg2sts!/b/dPcAAAAAAAAA&bo=OQPXATkD1wEDByI!&rf=viewer_4">
+<meta property="og:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/2jQgAjwFaxdLcHA1YDb0jhDXS2p0F9Qz1CrKwW1d208!/b/dHUAAAAAAAAA&bo=qwWAAtIFkQIDAE0!&rf=viewer_4">
+<meta property="article:published_time" content="2020-03-18T03:36:24.000Z">
+<meta property="article:modified_time" content="2020-03-18T03:37:41.739Z">
+<meta property="article:author" content="JiaYang">
+<meta property="article:tag" content="优化">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/9FZ5rJefVqgeX9pmDv9CfehKayZSPr3tC9XSOrERK4c!/b/dA4BAAAAAAAA&bo=5QHWAAAAAAADBxA!&rf=viewer_4">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/18/性能优化/"/>
+
+
+
+
+
+  <title>性能优化 | JY's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">JY's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/18/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JiaYang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/jy_blog_logo.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JY's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">性能优化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-18T11:36:24+08:00">
+                2020-03-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h1><hr>
+<ul>
+<li><a href="#1">卡顿</a></li>
+<li><a href="#2">如何衡量卡顿</a></li>
+<li><a href="#3">“卡顿” 产生的原因</a></li>
+<li><a href="#4">Profile GPU Rendering</a></li>
+<li><a href="#5">通用优化流程</a><ul>
+<li><a href="#6">第一步：UI层优化</a><ul>
+<li><a href="#7">过度绘制</a></li>
+<li><a href="#8">自定义控件绘制优化</a></li>
+<li><a href="#9">Hierarchy Viewer(层级查看器)工具使用</a></li>
+</ul>
+</li>
+<li><a href="#10">第二步：代码问题查找</a></li>
+<li><a href="#11">第三步：优化App的逻辑层</a></li>
+</ul>
+</li>
+</ul>
+<a name="1"/>
+### 卡顿
+
+<blockquote>
+<p>前言：关于Android性能优化,为何把”卡顿”放在前面 ？ 对于用户而言,可能注重的是App的流畅度,而如果AppUI卡顿,用户体验就不是很好了。所以想说明一下什么是”卡顿”,并了解一般卡顿的原因,这样才能解决卡顿。</p>
+</blockquote>
+<ul>
+<li><p>“卡顿”是什么？</p>
+<ul>
+<li><p>“卡顿” 直观的来讲，就是人的一种视觉感受，比如我们滑动界面时，如果滑动不流程我们就会有卡顿的感觉，这种感觉我们需要有一个量化指标，在编程时如果开发的程序超过了这个指标我们认为其是卡顿的。</p>
+</li>
+<li><p><strong>FPS(帧率)</strong> ：每秒显示帧数（Frames per Second）。表示图形处理器每秒钟能够更新的次数。高的帧率可以得到更流畅、更逼真的动画。一般来说12fps大概类似手动快速翻动书籍的帧率，这明显是可以感知到不够顺滑的。30fps就是可以接受的，但是无法顺畅表现绚丽的画面内容。提升至60fps则可以明显提升交互感和逼真感，但是一般来说超过75fps就不容易察觉到有明显的流畅度提升了，如果是VR设备需要高于75fps，才可能消除眩晕的感觉。</p>
+</li>
+<li><p>开发app的性能目标就是保持60fps，这意味着每一帧你只有16ms≈1000/60的时间来处理所有的任务。Android系统每隔16ms发出VSYNC信号，触发对UI进行渲染，如果每次渲染都成功，这样就能够达到流畅的画面所需要的60fps。</p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>如图所示</p>
+</blockquote>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/9FZ5rJefVqgeX9pmDv9CfehKayZSPr3tC9XSOrERK4c!/b/dA4BAAAAAAAA&bo=5QHWAAAAAAADBxA!&rf=viewer_4" alt="Image"></p>
+<ul>
+<li>如果你的某个操作花费时间是24ms，系统在得到VSYNC信号的时候就无法进行正常渲染，这样就发生了丢帧现象。那么用户在32ms内看到的会是同一帧画面。</li>
+</ul>
+<blockquote>
+<p>如图所示</p>
+</blockquote>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/9IIVaVopt5ds2b8y8Fx3DKUI930tEdZI.NGYlz0rd5Q!/b/dPkAAAAAAAAA&bo=wgE6AQAAAAADAN0!&rf=viewer_4" alt="Image"></p>
+<ul>
+<li>如果此时用户在看动画的执行或者滚动屏幕（如RecyclerView），就会感觉到界面不流畅了（卡了一下）。丢帧导致卡顿产生。</li>
+</ul>
+<p><strong>流畅的情况下：</strong></p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/76qIAgqViA1Dw9aiyY6yIlCkdaNOyo2WzU0cE9UJTjE!/b/dBEBAAAAAAAA&bo=twFuAQAAAAADAPw!&rf=viewer_4" alt="Image"></p>
+<p><strong>出现了丢帧现象（卡顿）：</strong></p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/TirqJspyU0rgnJozFiZKCsqRYZjYf1S7taz5sThbfOE!/b/dBoBAAAAAAAA&bo=mgFxAQAAAAADAM4!&rf=viewer_4" alt="Image"></p>
+<p><strong>严重丢帧（卡死了）：</strong></p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/Fr*cTiv5FLJkHJJBOcIKpPQSlt*uucdX*zDvyeZWxpo!/b/dJYAAAAAAAAA&bo=nAF7AQAAAAADAMI!&rf=viewer_4" alt="Image"></p>
+<hr>
+<a name="2"/>
+### 如何衡量卡顿
+
+<ul>
+<li>FPS的高低不能准确的反映应用的流程度。只有有更新的时候才刷新界面。当界面没有变动的时候，手机不需要对界面进行更新，所以此时的FPS会很低，如果1秒钟内都没有变动那么FPS=0。所以我们需要利用其他方式来衡量应用的流程度，比如可以利用丢帧数来衡量。</li>
+<li>单位时间内丢帧数可以反映出应用是否流程。不丢帧是终极目标，但每秒丢帧在6-7帧左右可以接受，如果丢10帧以上就需要优化了。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>丢帧情况（单位时间内均匀分布）</th>
+<th>卡顿情况</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0-10帧</td>
+<td>流畅</td>
+</tr>
+<tr>
+<td>10-20帧</td>
+<td>较卡</td>
+</tr>
+<tr>
+<td>20-40帧</td>
+<td>很卡</td>
+</tr>
+<tr>
+<td>40-60帧</td>
+<td>卡死了</td>
+</tr>
+</tbody></table>
+<p>对于我们开发人员来说,会使用一些工具找出卡顿比较集中的地方,找出原因,消除或减弱卡顿。(测试团队会有专门的工具去测试丢帧的情况)</p>
+<a name="3"/>
+### "卡顿" 产生的原因
+
+<ul>
+<li><p>核心：分析在16ms中我们的应用做了什么工作，哪些工作阻止我们在16ms时更新界面。</p>
+</li>
+<li><p>通常情况下，在16ms中我们有那些工作需要处理。单以XML布局被绘制出来为例进行说明。</p>
+</li>
+<li><p>处理过程：</p>
+<ul>
+<li>CPU负责把UI组件计算成多边形和纹理</li>
+<li>OpenGL负责绘制图像（Display List）</li>
+<li>GPU栅格化需要显示内容并渲染到屏幕上</li>
+</ul>
+</li>
+<li><p>而实际开发中我们还加入交互、业务处理等工作，这些工作都需要在16ms中处理完成。对于开发人员来说，需要有一个工具，很直观的帮助我们判断出那些工作占用了多少时间。</p>
+<a name="4"/>
+### Profile GPU Rendering
+</li>
+<li><p>通过手机开发者选项中提供的Profile GPU Rendering（GPU呈现模式分析）功能，我们可以清楚的看到处理流程中各部分的耗时。手机端工具（开发助手GPU渲染图）。建议大家在Android6.0及以上手机测试。</p>
+</li>
+</ul>
+<ul>
+<li>打开Profile GPU Rendering操作截图如下：</li>
+</ul>
+<p>大家可以拿着真机配置一下。</p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/hr5n39BPJ8UvtYL0LUu97wRORkPjIeU8lF4ag0TPc7E!/b/dA4BAAAAAAAA&bo=8ACJAQAAAAADB1o!&rf=viewer_4" alt="PRG-1"></p>
+<p><img src="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/Hqe78BFqEqlP*mTMogfLogDhFyte*dimriU073YSKME!/b/dLMAAAAAAAAA&bo=YgEuAgAAAAADAGo!&rf=viewer_4" alt="PRG-2"></p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/zBY9ChCCSjetzE94*BjBE*984NB8dLh5xKTIynCumqg!/b/dEIAAAAAAAAA&bo=UAETAgAAAAADAGU!&rf=viewer_4" alt="PRG-3"></p>
+<hr>
+<p><img src="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/s5kHMaPakIPbDMnKNwSP3dSuFt88jhtwQxMLXXUt8fU!/b/dBABAAAAAAAA&bo=xgCLAQAAAAADAGk!&rf=viewer_4" alt="PRG-4"></p>
+<p><img src="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/hRLbSRzY7XXBtNqqroy4JQ.DajqN457Df1wOjuxdiy0!/b/dBABAAAAAAAA&bo=kQJ7AQAAAAADAMw!&rf=viewer_4" alt="PRG-5"></p>
+<ul>
+<li><p>条形图说明:</p>
+<ul>
+<li>水平方向的一根绿线代表16ms。</li>
+<li>每条都代表一帧画面所有工作内容。</li>
+<li>每条中不同的颜色代表不同的工作内容。</li>
+</ul>
+</li>
+<li><p>Android6.0及以上的手机颜色对应关系如下：</p>
+</li>
+</ul>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/SBnCoSgc4kyOYuHZgN0hhqkCv*I*D8WlnEFIXFD5XVI!/b/dA4BAAAAAAAA&bo=ngNnAgAAAAADAN0!&rf=viewer_4" alt="PRG-6"></p>
+<ul>
+<li>原因分析：<br><a href="https://developer.android.google.cn/topic/performance/rendering/profile-gpu.html##visrep" target="_blank" rel="noopener">https://developer.android.google.cn/topic/performance/rendering/profile-gpu.html##visrep</a></li>
+</ul>
+<hr>
+<a name="5"/>
+## 通用优化流程
+
+
+<a name="6"/>
+### 第一步：UI层优化
+
+<ul>
+<li>UI问题比较容易查找</li>
+<li>一旦出现问题影响范围广（xml、mesure、layout、draw、Display List、栅格化……）</li>
+</ul>
+<p>工具：设备过渡绘制查看功能、Hierarchy Viewer等<br>常见问题：过渡绘制、布局复杂、层级过深……<br><a name="7"/></p>
+<h3 id="过度绘制"><a href="#过度绘制" class="headerlink" title="过度绘制"></a>过度绘制</h3><ul>
+<li>在屏幕一个像素上绘制多次（超过两次）。如：文本框，如果设置了背景颜色（黑色），那么显示的文字（白色）就需要在背景之上再次绘制。</li>
+<li>打开手机开发者中的<strong>GPU过度绘制</strong>即可查看。蓝色标识这个区域绘制了两次。(6.0以上)。</li>
+</ul>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/7FoBxIpMd8lvyTGui*cqwyFyPeWr5tdkvsRVrzGcdjI!/b/dA4BAAAAAAAA&bo=KQFKASkBSgEDByI!&rf=viewer_4" alt="过度绘制"></p>
+<ul>
+<li>说明：<ul>
+<li>如果大面积都是蓝色，属于正常情况。</li>
+<li>重点关注大面积绿色及以后的，表示存在过渡绘制。</li>
+</ul>
+</li>
+</ul>
+<a name="8"/>
+#### 自定义控件绘制优化
+
+<ul>
+<li>Clip Rect 与 Quick Reject</li>
+</ul>
+<p>Clip Rect：识别可见区域<br>Quick Reject：控件所在的矩形区域是否有交集</p>
+<ul>
+<li>在Canvas中有上述两个方法，帮助我们进行判断，避免出现过渡绘制。</li>
+</ul>
+<blockquote>
+<p>案例</p>
+</blockquote>
+<p><strong>案例效果：</strong></p>
+<p><img src="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/izHIIGndx9TxR9.Cf*8HsE*FDgmE9dnyoV2.wYq4*Hg!/b/dDQAAAAAAAAA&bo=QgEAAkIBAAIDByI!&rf=viewer_4" alt="自定义绘制-1"></p>
+<ul>
+<li>自定义一View，初始化就不在贴代码，在onDraw的时候，通常我们都是这样写：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for (int i &#x3D; 0; i &lt; imgs.length; i++) &#123;</span><br><span class="line">    canvas.drawBitmap(imgs[i],i*20,0,paint);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这样写出来后，打开GPU过度绘制，结果：</li>
+</ul>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/ZrJn30ftd6mUCeu3gSaj.XJ31oVaVC9Bx4CwMQKOb90!/b/dLEAAAAAAAAA&bo=QgEAAkIBAAIDACU!&rf=viewer_4" alt="自定义绘制-2"></p>
+<ul>
+<li>我们可以看出 中间的部分(第三张开始)已经开始了很重的过度绘制。原因很简单：对于“大王”这张牌来说，我们不需要绘制完整的图片，如果都绘制了就会出现上面的情况。</li>
+<li>处理思路：<ul>
+<li>找出牌需要绘制的区域，让canvas在绘制这张牌时仅仅按区域绘制一部分即可。对于“大王”这张牌来说我们仅仅绘制如下内容。</li>
+</ul>
+</li>
+</ul>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/LdYVhclbJSlWwTp2SeBSLDtu..5Dw6fcm6.B1sSO5a0!/b/dA4BAAAAAAAA&bo=QgEAAkIBAAIDACU!&rf=viewer_4" alt="自定义绘制-3"></p>
+<ul>
+<li>在Canvas中clipRect方法可以帮助我们划定一个区域，进行绘制。</li>
+<li>方法参数说明：clipRect(int left, int top, int right, int bottom)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">canvas.clipRect(0, 0, 20, imgs[i].getHeight());</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>设置完成后，我们来绘制大王这张牌。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">canvas.drawBitmap(imgs[0],0,0,paint);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>再增加循环，快速绘制所有的牌。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for (int i &#x3D; 0; i &lt; imgs.length; i++) &#123;</span><br><span class="line">    canvas.clipRect(i * 20, 0, (i + 1) * 20, imgs[i].getHeight());</span><br><span class="line">    canvas.drawBitmap(imgs[i],i*20,0,paint);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是运行后发现还是只显示大王一张图片，和上图一样。我们需要借助save和restore来完成裁剪的操作。</p>
+<ul>
+<li>save：用来保存Canvas的状态。save之后，可以调用Canvas的平移、放缩、旋转、错切、裁剪等操作。</li>
+<li>restore：用来恢复Canvas之前保存的状态。防止save后对Canvas执行的操作对后续的绘制有影响。</li>
+<li>save和restore要配对使用(restore可以比save少，但不能多)，如果restore调用次数比save多，会引发Error。save和restore之间，往往夹杂的是对Canvas的特殊操作。</li>
+</ul>
+<p>代码修改如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">for (int i &#x3D; 0; i &lt; imgs.length; i++) &#123;</span><br><span class="line">    canvas.save();</span><br><span class="line">    canvas.clipRect(i * 20, 0, (i + 1) * 20, imgs[i].getHeight());</span><br><span class="line">    canvas.drawBitmap(imgs[i],i*20,0,paint);</span><br><span class="line">    canvas.restore();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://a3.qpic.cn/psb?/V14YlNrL2eQEkW/h11.KUSgDhEvTTg0N99*2WHt7Ih0WzqqdBLi4jEy570!/b/dAEBAAAAAAAA&bo=QgEAAkIBAAIDACU!&rf=viewer_4" alt="自定义绘制-4"></p>
+<p>可是还是发现最后一张还不是我们想要的效果。需要修改代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">for (int i &#x3D; 0; i &lt; imgs.length; i++) &#123;</span><br><span class="line">    canvas.save();</span><br><span class="line">    if(i&lt;imgs.length-1) &#123;</span><br><span class="line">        canvas.clipRect(i * 20, 0, (i + 1) * 20, imgs[i].getHeight());</span><br><span class="line">    &#125;else if(i&#x3D;&#x3D;imgs.length-1)&#123;</span><br><span class="line">        canvas.clipRect(i * 20, 0, i * 20+imgs[i].getWidth(), imgs[i].getHeight());</span><br><span class="line">    &#125;</span><br><span class="line">    canvas.drawBitmap(imgs[i],i*20,0,paint);</span><br><span class="line">    canvas.restore();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也可以：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">for (int i &#x3D; 0; i &lt; imgs.length; i++) &#123;</span><br><span class="line">    canvas.save();</span><br><span class="line">    canvas.clipRect(i * 20, 0, i&#x3D;&#x3D; imgs.lenth - 1 ? i * 20+imgs[i].getWidth():(i + 1) * 20, imgs[i].getHeight());</span><br><span class="line">    canvas.drawBitmap(imgs[i],i*20,0,paint);</span><br><span class="line">    canvas.restore();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a name="9"/>
+#### Hierarchy Viewer(层级查看器)工具使用
+
+<ul>
+<li>Hierarchy Viewer可以很直接的呈现布局的层次关系，视图组件的各种属性。 我们可以通过红，黄，绿三种不同的颜色来区分布局的Measure，Layout，Executive的相对性能表现如何。<br>打开工具</li>
+</ul>
+<p><img src="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/FwQpyp*WEYcO1VMNtvDy8lBe995qQZQ.fHkfGDxuwso!/b/dPcAAAAAAAAA&bo=iwM5AosDOQIDByI!&rf=viewer_4" alt="Hierarchy Viewer-1"></p>
+<p><img src="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/k2GqZCdU1R3uL*sr7As2z16fC1Kfp5ck2.vMpVDfwfM!/b/dB4BAAAAAAAA&bo=jQOiAo0DogIDACU!&rf=viewer_4" alt="Hierarchy Viewer-2"></p>
+<p>查看各个节点Measure，Layout，Executive。</p>
+<p><img src="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/k2VodAvQNWB9z8*jOyC9ta5Sy7HHaXRi3HeJN6oYFz0!/b/dDQAAAAAAAAA&bo=LQOaAi0DmgIDACU!&rf=viewer_4" alt="Hierarchy Viewer-3"></p>
+<ul>
+<li>三个小圆点, 依次表示Measure, Layout, Draw, 可以理解为对应View的onMeasure, onLayout, onDraw三个方法。<ul>
+<li>绿色, 表示该View的此项性能比该View Tree中超过50%的View都要快。</li>
+<li>黄色, 表示该View的此项性能比该View Tree中超过50%的View都要慢。</li>
+<li>红色, 表示该View的此项性能是View Tree中最慢的。</li>
+</ul>
+</li>
+</ul>
+<p>一般来说：</p>
+<ul>
+<li>Measure红点, 可能是布局中嵌套RelativeLayout,或是嵌套LinearLayout都使用了weight属性.</li>
+<li>Layout红点, 可能是布局层级太深.</li>
+<li>Draw红点, 可能是自定义View的绘制有问题, 复杂计算等.</li>
+</ul>
+<p><strong>常规做法</strong></p>
+<ul>
+<li>没有用的父布局——没有背景绘制或没有大小限制的父布局，不会对界面效果产生任何影响。特别是<include/>进来的布局，很容易产生问题。可以通过<merge/>标签替代。</li>
+<li>在布局层次一样的情况下，建议使用LinearLayout代替RelativeLayout。</li>
+<li>使用LinearLayout导致的层次变深，可以使用RelativeLayout进行替换。同样的界面我们可以使用不同的方式去实现，选择一个层级最少的方案。</li>
+<li>不常用的UI被设置成了GONE，尝试使用<ViewStub/>代替。<a href="http://www.jianshu.com/p/5f64bacbd759" target="_blank" rel="noopener">附上一ViewStub使用</a></li>
+<li>去掉多余的背景颜色，减少过渡绘制，对于有多层背景色的布局来说，留最上面的一层即可。谨慎使用alpha，如果后渲染的元素有设置alpha值，那么这个元素就会和屏幕上已经渲染好的元素做blend处理，这样会导致不少性能问题，特别是出现在列表的Item中。</li>
+<li>对于使用Selector当背景的布局，可以将normal状态的color设置为透明。</li>
+<li>我们不能因为提高性能而忽略了界面需要达到的效果（平衡Design与Performance）。</li>
+</ul>
+<a name="10"/>
+### 第二步：代码问题查找
+
+<p>常见问题：我们重点关注Performance和Xml中的一些建议</p>
+<ul>
+<li>在绘制时实例化对象（onDraw）</li>
+<li>手机不能进入休眠状态（Wake lock）</li>
+<li>资源忘记回收</li>
+<li>Handler使用不当倒置内存泄漏</li>
+<li>没有使用SparseArray代替HashMap</li>
+<li>未被使用的资源</li>
+<li>布局中无用的参数</li>
+<li>可优化布局（如：ImageView与TextView的组合是否可以使用TextView独立完成）</li>
+<li>效率低下的weight</li>
+<li>无用的命名空间等</li>
+</ul>
+<p><strong>Lint工具使用</strong></p>
+<p>Android Studio中开启Lint工具,选中需要分析的Module，点击工具栏中Analyze中的Inspect Code选项。</p>
+<p><img src="http://b271.photo.store.qq.com/psb?/V14YlNrL2eQEkW/Zwx7cUKgzaf7c.HxQPNd0PmBqWpPcyxHzkgVr7o2K.Y!/b/dA8BAAAAAAAA&bo=gQLpAYEC6QEDByI!&rf=viewer_4" alt="Lint-1"></p>
+<p>选择需要分析的Module或整个项目</p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/pXALppPqtGPBPUFn0*bn5zQNvDDuI7frWuo6DPjKBhg!/b/dPkAAAAAAAAA&bo=jwFwAY8BcAEDACU!&rf=viewer_4" alt="Lint-2"></p>
+<p>我们可以逐一阅读一下，但是重点关注性能问题，xml中的一些问题也尽可能进行修复。</p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/jHd44oYmHQyC64DA.wsLnnu2LVeMRbAR8IsY5EgfZjU!/b/dBQBAAAAAAAA&bo=vAPWALwD1gADACU!&rf=viewer_4" alt="Lint-3"></p>
+<p><strong>问题处理</strong></p>
+<ul>
+<li>案例中性能问题处理</li>
+</ul>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/j70H6Ik4a*hEL8oiT6yiuXtLq2Aor3wj9yLq8AGJ7Gw!/b/dMkAAAAAAAAA&bo=6QFJAOkBSQADACU!&rf=viewer_4" alt="LintQuestion-1"></p>
+<p>其他的一些性能问题</p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/Xv4KhqpJAyvpzlcLZgsfZ7DjSW6tx1UyMffgQE118p4!/b/dMkAAAAAAAAA&bo=ZgJ4AGYCeAADACU!&rf=viewer_4" alt="LintQuestion-2"></p>
+<hr>
+<ul>
+<li>案例中xml提到的内容如下</li>
+</ul>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/DLm0ziaah.kqtciq9spSdV2eRUQTlqL2Xp69jZfArZY!/b/dBoBAAAAAAAA&bo=ZwFiAGcBYgADACU!&rf=viewer_4" alt="LintQuestion-3"></p>
+<p>其他问题：</p>
+<ul>
+<li>无效的命名空间</li>
+</ul>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/N87L5mYg1VeJ3UiBgo2loMcelpa1M0P50xGvCuzlOUw!/b/dMkAAAAAAAAA&bo=rwGgAK8BoAADACU!&rf=viewer_4" alt="LintQuestion-4"></p>
+<ul>
+<li>无效的布局参数<br>比如在线性布局中的控件使用到了相对布局中的属性，运行时需要处理，影响代码的执行效率。</li>
+</ul>
+<hr>
+<ul>
+<li>案例中关于定义声明变量的警告</li>
+</ul>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/WhaV9POiwwyi.QN*VQ6G4VXhPZUmrvbv1tAgir6zLgw!/b/dLEAAAAAAAAA&bo=cwFzAHMBcwADACU!&rf=viewer_4" alt="LintQuestion-5"></p>
+<p>意见或建议:</p>
+<ul>
+<li>不断关注Lint中提到的问题，将公司中命名规范中没有提到的内容逐一补全。</li>
+<li>Lint不是万能的。</li>
+<li>可使用阿里推出的插件：Alibaba Java Coding Guidelines。</li>
+</ul>
+<a name="11"/>
+### 第三步：优化App的逻辑层
+
+<p>常见问题：主线程耗时大的函数、滑动过程中的CPU工作问题，工具可以提供每个函数的耗时和调用次数，我们重点关注两种类型的函数：</p>
+<ul>
+<li>主线程里占用CUP时间很长的函数，特别关注IO操作（文件IO、网络IO、数据库操作等）。</li>
+<li>主线程调用次数多的函数。</li>
+</ul>
+<p><strong>使用Traceview找出卡住主线程的地方</strong></p>
+<p>Traceview工具使用</p>
+<p>通过Android Studio打开里面的Android Device Monitor，切换到DDMS窗口，点击左边栏上面想要跟踪的进程，再点击上面的Start Method Profiling的按钮，如下图所示：</p>
+<p><img src="http://a2.qpic.cn/psb?/V14YlNrL2eQEkW/fOQ1mtYLUlLqoH3rkNdbBaIUr.EelzJnWN6Hjkg2sts!/b/dPcAAAAAAAAA&bo=OQPXATkD1wEDByI!&rf=viewer_4" alt="Traceview-1"></p>
+<p>启动跟踪之后，再操控app，做一些你想要跟踪的事件，例如滑动RecyclerView，点击某些视图进入另外一个页面等等。操作完之后，回到Android Device Monitor，再次点击相同的按钮停止跟踪。此时工具会为刚才的操作生成TraceView的详细视图。</p>
+<p><img src="http://a1.qpic.cn/psb?/V14YlNrL2eQEkW/2jQgAjwFaxdLcHA1YDb0jhDXS2p0F9Qz1CrKwW1d208!/b/dHUAAAAAAAAA&bo=qwWAAtIFkQIDAE0!&rf=viewer_4" alt="Tranceview-2"></p>
+<p>重点关注Incl Cpu Time、Call+Recur Calls/Total、Real Time/Call<br>通过降序排序，我们可以分别找到这两列中数值比较大的内容。</p>
+<p>指标说明:</p>
+<ul>
+<li>Incl(Inclusive) Cpu Time：方法本身和其调用的所有子方法占用CPU时间。</li>
+<li>Excl(Exclusive) Cpu Time：方法本身占用CPU时间。</li>
+<li>Incl Real Time：方法(包含子方法)开始到结束用时。</li>
+<li>Excl Real Time：方法本身开始到结束用时。</li>
+<li>Call + Recursion Calls/Total：方法被调用次数 + 方法被递归调用次数。</li>
+<li>Cpu Time/Call：方法调用一次占用CPU时间. 方法实际执行时间(不包括io等待时间)。</li>
+<li>Real Time/Call：方法调用一次实际执行时间. 方法开始结束时间差(包括等待时间)。</li>
+</ul>
+<p>小案例：<br>我们可以在ViewHolder的设置数据中做点手脚，比如睡几毫秒（8ms），通过监控滚动，我们是否可以定位到问题代码。</p>
+<p><strong>好的做法</strong></p>
+<ul>
+<li>不要阻塞UI线程，占用CUP较多的工作尽可能放在子线程中执行。</li>
+<li>需要结合使用场景选择不同的线程处理方案<br>  AsyncTask: 为UI线程与工作线程之间进行快速的切换提供一种简单便捷的机制。适用于当下立即需要启动，但是异步执行的生命周期短暂的使用场景。<br>  HandlerThread: 为某些回调方法或者等待某些任务的执行设置一个专属的线程，并提供线程任务的调度机制。<br>  ThreadPool: 把任务分解成不同的单元，分发到各个不同的线程上，进行同时并发处理。<br>  IntentService: 适合于执行由UI触发的后台Service任务，并可以把后台任务执行的情况通过一定的机制反馈给UI。</li>
+<li>如果大量操作数据库数据时建议使用批处理操作。如：批量添加数据。</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E4%BC%98%E5%8C%96/" rel="tag"># 优化</a>
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/08/PyCharm%20%E5%AE%89%E8%A3%85%20%E6%BF%80%E6%B4%BB/" rel="next" title="PyCharm 安装 激活">
+                <i class="fa fa-chevron-left"></i> PyCharm 安装 激活
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/04/16/%E6%9F%A5%E7%9C%8B%20Android%E7%9A%84Keystore%E6%96%87%E4%BB%B6%E7%9A%84SHA1%E5%80%BC/" rel="prev" title="查看 Android的Keystore文件的SHA1值">
+                查看 Android的Keystore文件的SHA1值 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/jy_blog_logo.jpg"
+                alt="JiaYang" />
+            
+              <p class="site-author-name" itemprop="name">JiaYang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JiaYang627" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:272629247@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/users/cfa79ac38c9b/timeline" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.52pojie.cn/forum.php?mod=guide&view=my" title="吾爱破解" target="_blank">吾爱破解</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#性能优化"><span class="nav-number">1.</span> <span class="nav-text">性能优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#过度绘制"><span class="nav-number">1.0.1.</span> <span class="nav-text">过度绘制</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JiaYang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
